@@ -1,7 +1,7 @@
 /**
  * TikTok PC Pro Toolkit - Background Service Worker (Manifest V3)
- * Full CORS bypass, Referer injection across all TikTok CDNs,
- * 2-stage fallback download engine, and Complete Ghost Mode Telemetry Suppression.
+ * TikTok media downloads, Referer injection across supported CDNs,
+ * and best-effort Ghost Mode telemetry suppression.
  */
 
 try {
@@ -10,7 +10,7 @@ try {
   console.warn('[TikTok Toolkit] importScripts zip-helper:', e);
 }
 
-// 1. Ghost Mode: Comprehensive telemetry and view-tracking suppression rules (IDs 101 - 116)
+// 1. Ghost Mode: best-effort suppression for known telemetry routes (IDs 101 - 116)
 const GHOST_RULES = [
   // 1. Block ByteDance TEA Event Tracking & Telemetry domains entirely
   {
@@ -295,7 +295,7 @@ async function syncRules() {
       addRules: rulesToAdd
     });
 
-    console.log(`[TikTok Toolkit] DNR rules synchronized. Ghost Mode: ${ghostMode ? 'ACTIVE (BLOCKING)' : 'INACTIVE'}`);
+    console.log(`[TikTok Toolkit] DNR rules synchronized. Ghost Mode: ${ghostMode ? 'ACTIVE (best-effort blocking)' : 'INACTIVE'}`);
   } catch (err) {
     console.warn('[TikTok Toolkit] syncRules error:', err);
   }
@@ -305,7 +305,7 @@ async function syncRules() {
 chrome.runtime.onInstalled.addListener(() => {
   syncRules();
   try {
-    chrome.tabs.query({ url: "*://*.tiktok.com/*" }, (tabs) => {
+    chrome.tabs.query({ url: "https://*.tiktok.com/*" }, (tabs) => {
       if (chrome.runtime.lastError || !tabs) return;
       for (const tab of tabs) {
         if (tab && tab.id) {
@@ -347,7 +347,8 @@ function sanitizeFilename(name) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const { action } = request;
 
-  // 1. Download Video with 2-Stage Fallback
+  // 1. Download Video directly through Chrome's download manager.
+  // This streams media to disk and avoids buffering large videos in memory.
   if (action === 'DOWNLOAD_MEDIA') {
     const rawName = request.filename || `tiktok_${Date.now()}.mp4`;
     const cleanName = sanitizeFilename(rawName.endsWith('.mp4') ? rawName : rawName + '.mp4');
@@ -376,67 +377,39 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
       return true;
     }
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(targetUrl);
+    } catch (_) {
+      sendResponse({ success: false, error: 'Đường dẫn video không hợp lệ.' });
+      return false;
+    }
 
-    (async () => {
-      try {
-        // Fetch stream directly in Service Worker with Referer header to verify content & prevent 404/json download
-        const resp = await fetch(targetUrl, {
-          headers: {
-            'Referer': 'https://www.tiktok.com/'
-          }
-        });
+    const allowedHosts = [
+      'tiktok.com', 'tiktokcdn.com', 'tiktokv.com',
+      'byteoversea.com', 'ibytedtos.com', 'akamaized.net'
+    ];
+    const isAllowedHost = allowedHosts.some(host =>
+      parsedUrl.hostname === host || parsedUrl.hostname.endsWith(`.${host}`)
+    );
+    if (parsedUrl.protocol !== 'https:' || !isAllowedHost) {
+      sendResponse({ success: false, error: 'Máy chủ video không thuộc miền TikTok được hỗ trợ.' });
+      return false;
+    }
 
-        if (!resp.ok) {
-          sendResponse({ success: false, error: `Máy chủ trả về HTTP ${resp.status}` });
-          return;
-        }
-
-        const contentType = resp.headers.get('content-type') || '';
-        if (contentType.includes('application/json') || contentType.includes('text/html')) {
-          sendResponse({ success: false, error: 'Link video trả về dữ liệu web/lỗi (không phải video mp4).' });
-          return;
-        }
-
-        const buffer = await resp.arrayBuffer();
-        if (!buffer || buffer.byteLength < 1000) {
-          sendResponse({ success: false, error: 'Kích thước tệp video quá nhỏ hoặc bị lỗi.' });
-          return;
-        }
-
-        const bytes = new Uint8Array(buffer);
-        const b64 = uint8ArrayToBase64(bytes);
-        const dataUrl = `data:video/mp4;base64,${b64}`;
-
-        chrome.downloads.download({
-          url: dataUrl,
-          filename: cleanName,
-          saveAs: false,
-          conflictAction: 'uniquify'
-        }, (downloadId) => {
-          if (chrome.runtime.lastError || !downloadId) {
-            sendResponse({ success: false, error: chrome.runtime.lastError?.message || 'Lỗi lưu tệp MP4' });
-          } else {
-            sendResponse({ success: true, downloadId });
-          }
-        });
-      } catch (fetchErr) {
-        // Fallback: Direct Chrome download with DNR header injection
-        chrome.downloads.download({
-          url: targetUrl,
-          filename: cleanName,
-          saveAs: false,
-          conflictAction: 'uniquify'
-        }, (fallbackId) => {
-          if (chrome.runtime.lastError || !fallbackId) {
-            sendResponse({ success: false, error: fetchErr.message || 'Không thể tải video' });
-          } else {
-            sendResponse({ success: true, downloadId: fallbackId });
-          }
-        });
+    chrome.downloads.download({
+      url: parsedUrl.href,
+      filename: cleanName,
+      saveAs: false,
+      conflictAction: 'uniquify'
+    }, (downloadId) => {
+      if (chrome.runtime.lastError || !downloadId) {
+        sendResponse({ success: false, error: chrome.runtime.lastError?.message || 'Chrome không thể bắt đầu tải video.' });
+      } else {
+        sendResponse({ success: true, downloadId });
       }
-    })();
-
-    return true; // Keep async channel open
+    });
+    return true;
   }
 
   // 2. Fetch image buffer with Referer header (Bypasses any CORS in Content Script)

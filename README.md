@@ -6,17 +6,17 @@ Tiện ích mở rộng chuyên dụng cho **TikTok PC Web**, bổ sung các tí
 
 ## 🌟 Các tính năng chính
 
-1. **👻 Ghost Story Viewer (Xem Story ẩn danh):**
+1. **👻 Ghost Mode (hạn chế báo lượt xem Story):**
    * Tự động chặn các gói tin tracking (`commit/item/view/`, telemetry) của TikTok.
-   * Xem mọi story thoải mái mà chủ story hoàn toàn không thấy tên bạn trong danh sách viewer.
+   * Chặn một số endpoint báo lượt xem Story đã biết. TikTok có thể thay đổi cơ chế, nên tính năng này không đảm bảo ẩn danh tuyệt đối.
    * Có công tắc bật/tắt linh hoạt trong Popup.
 
 2. **👁️ Story Stats Overlay (Hiển thị lượt xem thực tế):**
    * Tự động bóc tách trường `stats.playCount` (lượt xem), `stats.diggCount` (lượt thích) từ dữ liệu gốc API của TikTok.
-   * Hiển thị Floating Badge đẹp mắt ngay trên Story Player (giống SnapTik).
+   * Hiển thị số liệu khi TikTok trả dữ liệu; nếu không có, widget báo trạng thái và lý do có thể xác định được.
 
 3. **📥 Trình tải Media chuyên nghiệp (Không watermark & Toàn bộ ảnh ZIP):**
-   * Tải video TikTok chất lượng cao nhất không logo.
+   * Tải video TikTok chất lượng cao nhất không logo, dùng trình tải của Chrome để ghi trực tiếp xuống ổ đĩa.
    * Đối với bài viết nhiều ảnh (Carousel): Tự động gom toàn bộ ảnh gốc vào một file `.zip` bằng module `SimpleZip` thuần JS tải 1 click.
    * Tải Story trực tiếp.
 

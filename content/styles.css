@@ -176,6 +176,19 @@
   text-transform: uppercase;
 }
 
+.tk-pro-stats-status {
+  min-height: 14px;
+  margin-top: -7px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.tk-pro-stats-status[data-state="loading"] { color: #fbbf24; }
+.tk-pro-stats-status[data-state="ready"] { color: #25f4ee; }
+.tk-pro-stats-status[data-state="error"] { color: #fb7185; }
+
 /* Action Buttons inside Widget */
 .tk-pro-actions {
   display: flex;

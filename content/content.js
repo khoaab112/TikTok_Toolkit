@@ -5,7 +5,7 @@
  * Synchronizes Ghost Mode with MAIN world and Background Service Worker.
  */
 (function () {
-  console.log('%c[TikTok Pro Toolkit v1.2.12] Active on:', 'color:#25f4ee;font-weight:bold;font-size:13px;', window.location.href);
+  console.log('%c[TikTok Pro Toolkit v1.2.13] Active on:', 'color:#25f4ee;font-weight:bold;font-size:13px;', window.location.href);
 
   // Clean up any previous loop interval in this tab to prevent ghost loops
   if (window.__TIKTOK_TOOLKIT_LOOP_INTERVAL__) {
@@ -92,6 +92,15 @@
   function updateStatsVisibility() {
     const stats = document.querySelector('#tk-pro-floating-widget .tk-pro-stats-grid');
     if (stats) stats.style.display = showStats ? '' : 'none';
+    const status = document.querySelector('#tk-pro-floating-widget .tk-pro-stats-status');
+    if (status) status.style.display = showStats ? '' : 'none';
+  }
+
+  function setStatsStatus(message, state = 'idle') {
+    const status = document.getElementById('tk-pro-stats-status');
+    if (!status) return;
+    setTextIfChanged(status, message);
+    status.dataset.state = state;
   }
 
   // Clean URL escaping and unicode slashes
@@ -401,24 +410,41 @@
     const previousRequest = requestedDetailIds.get(id);
     if (previousRequest?.inFlight || (previousRequest && now - previousRequest.lastAttempt < DETAIL_RETRY_DELAY_MS)) return;
 
-    const requestState = { lastAttempt: now, inFlight: true };
+    const requestState = { lastAttempt: now, inFlight: true, status: 'loading' };
     requestedDetailIds.set(id, requestState);
     if (requestedDetailIds.size > 100) {
       requestedDetailIds.delete(requestedDetailIds.keys().next().value);
     }
 
     fetch(`/api/item/detail/?itemId=${encodeURIComponent(id)}`, { credentials: 'include' })
-      .then(response => response.ok ? response.json() : null)
+      .then(response => {
+        if (!response.ok) {
+          requestState.status = 'error';
+          requestState.error = `HTTP ${response.status}`;
+          return null;
+        }
+        return response.json();
+      })
       .then(json => {
         const item = json?.itemInfo?.itemStruct || json?.itemStruct || json?.aweme_detail;
         if (item) {
+          requestState.status = 'loaded';
           registerItem(item, 'active_item_detail');
+        } else if (requestState.status === 'loading') {
+          requestState.status = 'unavailable';
+        }
+        scheduleStatsAndBadgeUpdate();
+      })
+      .catch(error => {
+        requestState.status = 'error';
+        requestState.error = error?.message || 'Network error';
+        scheduleStatsAndBadgeUpdate();
+      })
+      .finally(() => {
+        if (requestedDetailIds.get(id) === requestState) {
+          requestState.inFlight = false;
           scheduleStatsAndBadgeUpdate();
         }
-      })
-      .catch(() => { })
-      .finally(() => {
-        if (requestedDetailIds.get(id) === requestState) requestState.inFlight = false;
       });
   }
 
@@ -1277,7 +1303,7 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
-        setButtonState('success', '✅ Đã tải video HD!', 100);
+        setButtonState('success', '✅ Đã bắt đầu tải video HD!', 100);
         return;
       }
 
@@ -1285,7 +1311,7 @@
       const fallbackTimer = setTimeout(() => {
         if (!downloadResponded) {
           downloadResponded = true;
-          setButtonState('success', '✅ Đã gửi lệnh tải video HD!', 100);
+          setButtonState('success', '✅ Đã bắt đầu tải video HD!', 100);
         }
       }, 5000);
 
@@ -1302,7 +1328,7 @@
           return;
         }
         if (res && res.success) {
-          setButtonState('success', '✅ Đã tải video HD!', 100);
+          setButtonState('success', '✅ Đã bắt đầu tải video HD!', 100);
         } else {
           setButtonState('error', '❌ Lỗi: ' + (res?.error || 'Thử lại'));
         }
@@ -1810,6 +1836,7 @@
         setTextIfChanged(viewsEl, '---', 'Đang ở trang cá nhân');
         setTextIfChanged(likesEl, '---', 'Đang ở trang cá nhân');
         setTextIfChanged(cmtEl, '---', 'Đang ở trang cá nhân');
+        setStatsStatus('Mở video để xem số liệu.', 'idle');
         return;
       }
 
@@ -1817,6 +1844,7 @@
         setTextIfChanged(viewsEl, '---', 'Chưa xác định được bài đang xem');
         setTextIfChanged(likesEl, '---', 'Chưa xác định được bài đang xem');
         setTextIfChanged(cmtEl, '---', 'Chưa xác định được bài đang xem');
+        setStatsStatus('Chưa nhận diện được bài đang xem.', 'idle');
         return;
       }
 
@@ -1826,6 +1854,12 @@
         setTextIfChanged(viewsEl, domStats.views > 0 ? Number(domStats.views).toLocaleString() : '---', 'Lượt xem đang hiển thị trên TikTok');
         setTextIfChanged(likesEl, domStats.likes > 0 ? Number(domStats.likes).toLocaleString() : '---', 'Lượt thích đang hiển thị trên TikTok');
         setTextIfChanged(cmtEl, domStats.comments > 0 ? Number(domStats.comments).toLocaleString() : '---', 'Bình luận đang hiển thị trên TikTok');
+        setStatsStatus(
+          domStats.views || domStats.likes || domStats.comments
+            ? 'Đang đọc số liệu trực tiếp trên TikTok.'
+            : 'Đang chờ TikTok hiển thị số liệu.',
+          domStats.views || domStats.likes || domStats.comments ? 'ready' : 'loading'
+        );
         return;
       }
 
@@ -1872,6 +1906,32 @@
         setTextIfChanged(viewsEl, '---', 'TikTok không công khai lượt xem đối với bài đăng ảnh.');
       } else {
         setTextIfChanged(viewsEl, '---', '');
+      }
+
+      const hasAnyStats = Boolean(
+        resolvedViews || resolvedLikes || media?.stats?.commentCount || domStats.comments
+      );
+      const detailState = current?.id ? requestedDetailIds.get(String(current.id)) : null;
+      if (isPhoto && !resolvedViews) {
+        setStatsStatus('Đã nhận số liệu; TikTok không công khai lượt xem ảnh.', 'unavailable');
+      } else if (isStory && !resolvedViews) {
+        setStatsStatus('TikTok không cung cấp lượt xem công khai cho Story này.', 'unavailable');
+      } else if (hasAnyStats && !resolvedViews) {
+        setStatsStatus('Đã nhận một phần số liệu; lượt xem chưa có.', 'unavailable');
+      } else if (hasAnyStats) {
+        setStatsStatus('Đã nhận số liệu bài đăng.', 'ready');
+      } else if (detailState?.inFlight || detailState?.status === 'loading') {
+        setStatsStatus('Đang lấy số liệu từ TikTok…', 'loading');
+      } else if (detailState?.status === 'error') {
+        setStatsStatus('Lỗi khi lấy số liệu. Thử tải lại trang.', 'error');
+      } else if (detailState?.status === 'unavailable') {
+        setStatsStatus('TikTok không trả số liệu cho bài đăng này.', 'unavailable');
+      } else if (detailState?.status === 'loaded') {
+        setStatsStatus('Đã nhận dữ liệu; các chỉ số hiện bằng 0.', 'ready');
+      } else if (isStory) {
+        setStatsStatus('TikTok không cung cấp đầy đủ số liệu Story.', 'unavailable');
+      } else {
+        setStatsStatus('Chưa có số liệu từ TikTok.', 'idle');
       }
     } catch (err) {
       console.warn('[TikTok Toolkit] refreshActiveMediaStats error:', err);
@@ -2002,19 +2062,19 @@
   function mountFloatingWidget() {
     const existing = document.getElementById('tk-pro-floating-widget');
     if (existing) {
-      if (existing.dataset.tkVersion === '1.2.12') return;
+      if (existing.dataset.tkVersion === '1.2.13') return;
       existing.remove();
     }
 
     const widget = document.createElement('div');
     widget.id = 'tk-pro-floating-widget';
-    widget.dataset.tkVersion = '1.2.12';
+    widget.dataset.tkVersion = '1.2.13';
     widget.innerHTML = `
       <div class="tk-pro-widget-header" id="tk-pro-widget-header">
         <div class="tk-pro-widget-title">
           <span>🎵</span>
           <span>TikTok Pro Toolkit</span>
-          <span style="font-size:10px; color:#25f4ee; margin-left:6px; opacity:0.8; font-weight:normal;">v1.2.12</span>
+          <span style="font-size:10px; color:#25f4ee; margin-left:6px; opacity:0.8; font-weight:normal;">v1.2.13</span>
         </div>
         <button class="tk-pro-widget-toggle-btn" id="tk-btn-minimize" title="Thu nhỏ thành icon tròn">—</button>
       </div>
@@ -2034,6 +2094,7 @@
             <span class="tk-pro-stat-lbl">💬 Cmt</span>
           </div>
         </div>
+        <div class="tk-pro-stats-status" id="tk-pro-stats-status" role="status" aria-live="polite" data-state="idle">Đang chờ dữ liệu…</div>
 
         <!-- Smart Download Button inside Floating Widget -->
         <button class="tk-pro-widget-dl-btn" id="tk-btn-widget-download" title="Tải xuống Video HD, Album Ảnh ZIP hoặc Toàn bộ Kênh">
@@ -2049,8 +2110,8 @@
           <div class="tk-pro-progress-text" id="tk-pro-progress-text">0%</div>
         </div>
 
-        <div class="tk-pro-ghost-indicator" id="tk-ghost-toggle-row" title="Bấm vào đây để Bật hoặc Tắt xem Story ẩn danh">
-          <span>👻 Xem Story Ẩn Danh:</span>
+        <div class="tk-pro-ghost-indicator" id="tk-ghost-toggle-row" title="Bật hoặc tắt chặn một số yêu cầu tracking Story đã biết">
+          <span>👻 Ghost Mode Story:</span>
           <span class="tk-pro-ghost-tag" id="tk-ghost-tag">ĐANG BẬT</span>
         </div>
       </div>
@@ -2133,7 +2194,7 @@
     }
     notifyMainWorldGhostMode(ghostModeActive);
     updateGhostModeUI();
-    showToast(ghostModeActive ? '👻 Xem Story Ẩn Danh: Đã BẬT' : '⚠️ Xem Story Ẩn Danh: Đã TẮT');
+    showToast(ghostModeActive ? '👻 Đã bật chặn tracking Story đã biết' : '⚠️ Đã tắt chặn tracking Story');
   }
 
   function updateGhostModeUI() {
