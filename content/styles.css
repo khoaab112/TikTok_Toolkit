@@ -1,0 +1,433 @@
+/* TikTok PC Pro Toolkit - Modern Theme */
+
+/* ==========================================================
+   1. Persistent Floating Widget (Always Accessible)
+   ========================================================== */
+#tk-pro-floating-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483646;
+  width: 290px;
+  background: rgba(18, 18, 18, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(254, 44, 85, 0.25);
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  user-select: none;
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-radius 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+#tk-pro-floating-widget.dragging {
+  transition: none !important;
+  opacity: 0.92;
+  cursor: grabbing !important;
+}
+
+#tk-pro-floating-widget.minimized {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(24, 24, 24, 0.96) 0%, rgba(15, 15, 15, 0.98) 100%) !important;
+  border: 2px solid rgba(254, 44, 85, 0.6) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 16px rgba(254, 44, 85, 0.45), 0 0 8px rgba(37, 244, 238, 0.35) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#tk-pro-floating-widget.minimized:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 24px rgba(254, 44, 85, 0.7), 0 0 12px rgba(37, 244, 238, 0.5) !important;
+}
+
+#tk-pro-floating-widget.minimized .tk-pro-widget-header {
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-bottom: none !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+}
+
+#tk-pro-floating-widget.minimized .tk-pro-widget-title {
+  gap: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#tk-pro-floating-widget.minimized .tk-pro-widget-title span:first-child {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  filter: drop-shadow(0 0 6px rgba(254, 44, 85, 0.7));
+}
+
+#tk-pro-floating-widget.minimized .tk-pro-widget-title span:not(:first-child) {
+  display: none !important;
+}
+
+#tk-pro-floating-widget.minimized .tk-pro-widget-toggle-btn {
+  display: none !important;
+}
+
+#tk-pro-floating-widget.minimized .tk-pro-widget-body {
+  display: none !important;
+}
+
+.tk-pro-widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: grab;
+}
+
+.tk-pro-widget-header:active {
+  cursor: grabbing;
+}
+
+.tk-pro-widget-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  background: linear-gradient(45deg, #25f4ee, #fe2c55);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.tk-pro-widget-toggle-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  line-height: 1;
+}
+
+.tk-pro-widget-toggle-btn:hover {
+  color: #ffffff;
+}
+
+.tk-pro-widget-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Stats Row */
+.tk-pro-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
+.tk-pro-stat-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.tk-pro-stat-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.tk-pro-stat-val.views {
+  color: #25f4ee;
+}
+
+.tk-pro-stat-val.likes {
+  color: #fe2c55;
+}
+
+.tk-pro-stat-lbl {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+/* Action Buttons inside Widget */
+.tk-pro-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tk-pro-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.2s ease;
+  color: #fff;
+}
+
+.tk-pro-btn-dl-video {
+  background: linear-gradient(135deg, #fe2c55 0%, #ff0050 100%);
+  box-shadow: 0 4px 15px rgba(254, 44, 85, 0.35);
+}
+
+.tk-pro-btn-dl-video:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(254, 44, 85, 0.5);
+}
+
+.tk-pro-btn-dl-zip {
+  background: linear-gradient(135deg, #25f4ee 0%, #00b4d8 100%);
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(37, 244, 238, 0.35);
+}
+
+.tk-pro-btn-dl-zip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 244, 238, 0.5);
+}
+
+.tk-pro-ghost-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+.tk-pro-ghost-indicator:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tk-pro-ghost-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(37, 244, 238, 0.15);
+  color: #25f4ee;
+  border: 1px solid rgba(37, 244, 238, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* ==========================================================
+   2. Profile Grid Likes Badge (Hiển thị số tym)
+   ========================================================== */
+.tk-pro-grid-like-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  user-select: none;
+  line-height: 1;
+}
+
+.tk-pro-grid-like-badge .tk-pro-like-val {
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* ==========================================================
+   4. Floating Widget Smart Download Button
+   ========================================================== */
+.tk-pro-widget-dl-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #fe2c55 0%, #ff4757 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(254, 44, 85, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  outline: none;
+  margin: 4px 0;
+}
+
+.tk-pro-widget-dl-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(254, 44, 85, 0.6);
+  background: linear-gradient(135deg, #ff3b5c 0%, #ff5263 100%);
+}
+
+.tk-pro-widget-dl-btn:active {
+  transform: translateY(1px);
+}
+
+.tk-pro-widget-dl-btn.photo-mode {
+  background: linear-gradient(135deg, #25f4ee 0%, #00b4d8 100%);
+  color: #000000;
+  box-shadow: 0 4px 15px rgba(37, 244, 238, 0.35);
+}
+
+.tk-pro-widget-dl-btn.photo-mode:hover {
+  box-shadow: 0 6px 20px rgba(37, 244, 238, 0.55);
+  background: linear-gradient(135deg, #38f8f2 0%, #0abde3 100%);
+}
+
+.tk-pro-widget-dl-btn.profile-mode {
+  background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(217, 70, 239, 0.4);
+}
+
+.tk-pro-widget-dl-btn.profile-mode:hover {
+  box-shadow: 0 6px 20px rgba(217, 70, 239, 0.65);
+  background: linear-gradient(135deg, #9333ea 0%, #f43f5e 100%);
+}
+
+.tk-pro-widget-dl-btn.loading {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: #ffffff !important;
+  cursor: wait !important;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.45) !important;
+  pointer-events: none !important;
+}
+
+.tk-pro-widget-dl-btn.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.45) !important;
+  pointer-events: none !important;
+}
+
+.tk-pro-widget-dl-btn.error {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.45) !important;
+  pointer-events: none !important;
+}
+
+/* Download Progress Bar */
+.tk-pro-progress-wrap {
+  width: 100%;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  margin: 2px 0 6px 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: none;
+}
+
+.tk-pro-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #25f4ee 0%, #fe2c55 100%);
+  border-radius: 8px;
+  transition: width 0.15s ease-out;
+}
+
+.tk-pro-progress-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  user-select: none;
+}
+
+/* ==========================================================
+   5. Global Toast Notifications
+   ========================================================== */
+.tk-pro-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(18, 18, 18, 0.95);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+  z-index: 2147483647;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.tk-pro-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.tk-pro-grid-tile {
+  position: relative !important;
+}

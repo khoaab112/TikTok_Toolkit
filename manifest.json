@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "TikTok PC Pro Toolkit",
+  "version": "1.2.12",
+  "description": "Tải video HD không logo, tải toàn bộ ảnh ZIP, xem story ẩn danh, hiển thị số view story, likes, comments tự động.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "downloads",
+    "declarativeNetRequest",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.tiktok.com/*",
+    "*://*.tiktokcdn.com/*",
+    "*://*.tiktokv.com/*",
+    "*://*.byteoversea.com/*",
+    "*://*.ibytedtos.com/*",
+    "*://*.akamaized.net/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.tiktok.com/*"],
+      "js": ["content/injected.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["*://*.tiktok.com/*"],
+      "js": ["utils/zip-helper.js", "content/content.js"],
+      "css": ["content/styles.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/injected.js",
+        "utils/zip-helper.js",
+        "icons/*"
+      ],
+      "matches": ["*://*.tiktok.com/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

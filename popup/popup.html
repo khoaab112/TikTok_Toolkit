@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>TikTok PC Pro Toolkit</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-box">
+        <span class="logo-icon">🎵</span>
+        <div>
+          <h1 class="logo-title">TikTok Pro</h1>
+          <span class="logo-sub">PC Toolkit v1.0</span>
+        </div>
+      </div>
+      <span class="status-badge" id="status-badge">Đang hoạt động</span>
+    </header>
+
+    <!-- Main Features Toggles -->
+    <section class="section">
+      <h2 class="section-title">Cài đặt tính năng</h2>
+      
+      <!-- Ghost Mode Toggle -->
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">👻 Xem Story Ẩn Danh (Ghost)</span>
+          <span class="setting-desc">Chặn báo cáo lượt xem, chủ story không biết</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-ghost-mode" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Story Stats Toggle -->
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">👁️ Hiện số View Story</span>
+          <span class="setting-desc">Hiển thị lượt xem thực tế như SnapTik</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-show-stats" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Auto ZIP Toggle -->
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">📦 Tải Trọn Bộ Ảnh (.ZIP)</span>
+          <span class="setting-desc">Tắt để tải từng ảnh thành file riêng</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-auto-zip" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Privacy Status Modifier Section -->
+    <section class="section">
+      <h2 class="section-title">🛡️ Đổi trạng thái bài viết (Owner)</h2>
+      <p class="section-desc">Gửi yêu cầu đổi quyền riêng tư cho Video/Story thuộc tài khoản của bạn.</p>
+
+      <div class="form-group">
+        <input type="text" id="input-item-id" class="input-text" placeholder="Nhập ID Video hoặc Story (aweme_id)">
+      </div>
+
+      <div class="form-group">
+        <select id="select-visibility" class="select-box">
+          <option value="0">🌍 Mọi người (Công khai / Public)</option>
+          <option value="1">👥 Bạn bè (Friends)</option>
+          <option value="2">🔒 Chỉ mình tôi (Only me / Private)</option>
+        </select>
+      </div>
+
+      <button id="btn-modify-privacy" class="btn-primary">
+        🚀 Cập nhật trạng thái
+      </button>
+
+      <div id="privacy-result" class="result-message"></div>
+    </section>
+
+    <section class="section dev-tools" id="developer-tools" hidden>
+      <h2 class="section-title">Công cụ phát triển</h2>
+      <button id="btn-reload-extension" class="btn-secondary" type="button">↻ Nạp lại tiện ích</button>
+      <p class="section-desc">Sau khi nạp lại, hãy tải lại tab TikTok để cập nhật content script.</p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>Được tối ưu cho TikTok PC Web</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
